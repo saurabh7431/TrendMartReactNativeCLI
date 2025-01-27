@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler'; // Make sure this is at the top of the file
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, ActivityIndicator } from 'react-native';
 import Home from './src/components/UI/Home';
@@ -16,7 +16,6 @@ import AddressPage from './src/components/UI/AddressPage';
 import ConformationPage from './src/components/UI/ConformationPage';
 import OrderDetails from './src/components/UI/OrderDetails';
 import "./global.css"
-import StackNavigator from './src/components/StackNavigator/StackNavigator';
 
 // Stack Navigator for AddressPage and other screens
 const Stack = createStackNavigator();
@@ -121,6 +120,7 @@ const App = () => {
     try {
       await AsyncStorage.setItem('userToken', responseData.token);
       setIsLoggedIn(true);
+      
     } catch (error) {
       console.error('Error storing token', error);
     }

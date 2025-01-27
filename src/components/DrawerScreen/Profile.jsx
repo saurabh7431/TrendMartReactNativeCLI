@@ -52,22 +52,11 @@ console.log("Profile");
         fetchProfile();
     }, []);
 
-    // Handle login state change
-    // useEffect(() => {
-    //     // setShowLogin(!isLoggedIn); // Update showLogin based on isLoggedIn prop
-    // }, [isLoggedIn]);
 
     const handleLoginSuccess = () => {
         // setShowLogin(false);
         onLoginSuccess();
     };
-
-    // const handleSkipLogin = () => {
-    //     setShowLogin(false);
-    //     onSkipLogin();
-    //     navigation.navigate("Home"); // Redirect to Home screen
-    // };
-   
 
         // Function to pick an image from the gallery
         const pickImage = () => {
