@@ -13,7 +13,7 @@ const Profile = ({ isLoggedIn, onLogout, onLoginSuccess, onSkipLogin }) => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [loading, setLoading]=useState(true)
     const navigation = useNavigation();
-console.log("Profile");
+
 
     
     
@@ -152,7 +152,6 @@ console.log("Profile");
                         </Pressable>
                     </View>
                     <Text style={styles.text}> {userProfile.name}</Text>
-                    <Button title="Logout" onPress={onLogout} />
                 </View>
              )} 
         </View>

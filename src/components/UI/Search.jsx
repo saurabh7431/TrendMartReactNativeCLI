@@ -1,67 +1,130 @@
-import React, { useState } from 'react'
-import { View, Text, TextInput, FlatList } from 'react-native'
-import Feather from 'react-native-vector-icons/Feather'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
 
-const Search = () => {
-  const [query, setQuery] = useState('') // User input
-  const [filteredData, setFilteredData] = useState([]) // Filtered data
+// Backend URL for fetching products
+const API_URL = 'http://192.168.29.170:3000/user/Search';
 
-  // Dummy user data
-  const users = [
-    { id: '1', name: 'John Doe', email: 'john.doe@example.com' },
-    { id: '2', name: 'Jane Smith', email: 'jane.smith@example.com' },
-    { id: '3', name: 'Samuel Green', email: 'samuel.green@example.com' },
-    { id: '4', name: 'Emma Brown', email: 'emma.brown@example.com' },
-    { id: '5', name: 'Michael Black', email: 'michael.black@example.com' },
-    { id: '6', name: 'Linda White', email: 'linda.white@example.com' },
-    { id: '7', name: 'Paul Johnson', email: 'paul.johnson@example.com' },
-    { id: '8', name: 'Olivia Martin', email: 'olivia.martin@example.com' },
-  ]
+const Search = ({ isLoggedIn, onLoginSuccess, onSkipLogin }) => {
+  const [query, setQuery] = useState('');
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showLogin, setShowLogin] = useState(isLoggedIn);
 
-  // Handle search logic
-  const handleSearch = (text) => {
-    setQuery(text)
-    if (text === '') {
-      setFilteredData([]) // Show nothing if the input is empty
-    } else {
-      const filtered = users.filter(user => 
-        user.name.toLowerCase().includes(text.toLowerCase()) || 
-        user.email.toLowerCase().includes(text.toLowerCase())
-      )
-      setFilteredData(filtered)
+
+  const navigation=useNavigation();
+  const handleSearch = async () => {
+    if (!query) return;
+
+    setLoading(true);
+    setError(null);
+    const token = await AsyncStorage.getItem('userToken');
+    try {
+      const response = await fetch(`${API_URL}?query=${query}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add Authorization header if needed
+           'Authorization': `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setProducts(data.products);
+      } else {
+        setError(data.message);
+      }
+    } catch (err) {
+      setError('An error occurred while fetching products');
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+  useEffect(() => {
+      setShowLogin(!isLoggedIn);
+    }, [isLoggedIn]);
+
+    const handleLoginSuccess = async () => {
+      if (onLoginSuccess) {
+        onLoginSuccess();
+      }
+      setShowLogin(false);
+      navigation.navigate("Cart")
+    };
+
+  const bufferToBase64 = (buffer) => {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    bytes.forEach((byte) => {
+      binary += String.fromCharCode(byte);
+    });
+    return `data:image/jpeg;base64,${btoa(binary)}`;
+  };
 
   return (
-    <View className="flex-1 bg-white p-4">
+    <ScrollView className="flex-1 p-4">
+      
       {/* Search Bar */}
-      <View className="flex-row items-center bg-gray-100 p-2 rounded-lg mb-4">
-        <Feather name="search" size={20} color="#888" className="mr-2" />
-        <TextInput
-          value={query}
-          onChangeText={handleSearch}
-          placeholder="Search by name or email..."
-          className="flex-1 text-lg text-black"
-        />
+      <TextInput
+        value={query}
+        onChangeText={setQuery}
+        placeholder="Search for products..."
+        className="bg-white p-3 rounded-lg shadow-md mb-4"
+        style={{ elevation: 3 }}
+      />
+      
+      <View className='justify-center items-center'>
+      <TouchableOpacity onPress={handleSearch} className="bg-[#033452] w-[100] p-3 rounded-lg mb-6">
+        <Text className="text-white text-center font-bold">Search</Text>
+      </TouchableOpacity>
       </View>
 
-      {/* Search Results */}
-      {filteredData.length > 0 ? (
-        <FlatList
-          data={filteredData}
-          renderItem={({ item }) => (
-            <View className="py-2 border-b border-gray-200">
-              <Text className="text-lg text-black">{item.name}</Text>
-              <Text className="text-sm text-gray-500">{item.email}</Text>
-            </View>
-          )}
-          keyExtractor={(item) => item.id}
-        />
-      ) : (
-        <Text className="text-center text-gray-500 mt-4">No results found</Text>
+      {/* Loading Indicator */}
+      {loading && (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
       )}
-    </View>
-  )
-}
 
-export default Search
+      {/* Error Message */}
+      {error && (
+        <View className="bg-red-100 p-3 rounded-lg mb-4">
+          <Text className="text-red-500 text-center">{error}</Text>
+        </View>
+      )}
+
+      {/* No products found */}
+      {products.length === 0 && !loading && !error && (
+        <Text className="text-lg text-center text-gray-500">No products found</Text>
+      )}
+
+      {/* Product List */}
+      {products.length > 0 && !loading && (
+        products.map((product) => (
+          <View key={product._id} className='justify-center items-center'>
+            <View  className="bg-white p-4 rounded-lg w-[200] shadow-lg mb-4">
+            <View className="flex-row   items-center">
+              <Image
+
+                source={{ uri: bufferToBase64(product.image.data) }}
+                className="w-[100] h-[150] rounded-lg"
+                style={{ resizeMode: 'cover' }}
+              />
+              <View className="ml-4 flex-1">
+                <Text className="text-xl font-semibold text-gray-800">{product.name}</Text>
+                <Text className="text-sm text-gray-600">Price: ₹{product.price}</Text>
+              </View>
+            </View>
+          </View>
+          </View>
+        ))
+      )}
+    </ScrollView>
+  );
+};
+
+export default Search;
