@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, ActivityIndicator, Pressable, Alert, TouchableOpacity } from 'react-native';
+import Config from 'react-native-config';
 import RazorpayCheckout from 'react-native-razorpay';
 
 
@@ -9,6 +10,11 @@ const ConformationPage = ({route}) => {
   const [details, setDetails]=useState(null)
   const [loading, setLoading]=useState(true);
   const navigation=useNavigation()
+
+  //API Keys
+  const hostApiKey="https://trendmart-3.onrender.com";
+  const userPayment=`${hostApiKey}/user/userPayment`
+  const verifyPayments=`${hostApiKey}/user/userPayment/verify`
 
 
  useEffect(() => {
@@ -33,7 +39,7 @@ const ConformationPage = ({route}) => {
   try {
     setLoading(true)
     // Step 1: Call backend to create the payment order
-    const response = await fetch('http://192.168.29.170:3000/user/userPayment', {
+    const response = await fetch(userPayment, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -112,7 +118,7 @@ const ConformationPage = ({route}) => {
 // Verify payment after success
 const verifyPayment = async (orderId, paymentId, signature) => {
   try {
-    const response = await fetch('http://192.168.29.170:3000/user/userPayment/verify', {
+    const response = await fetch(verifyPayments, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

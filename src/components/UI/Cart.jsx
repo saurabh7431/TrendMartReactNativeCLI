@@ -8,14 +8,17 @@ import Minus from 'react-native-vector-icons/FontAwesome';
 import Delete from 'react-native-vector-icons/MaterialCommunityIcons';
 import Login from './Login';
 import { memo } from 'react';
+import Config from 'react-native-config';
 
 const Cart = ({ isLoggedIn, onLoginSuccess, onSkipLogin }) => {
-  console.log("Cart");
   
   const [cartItem, setCartItem] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showLogin, setShowLogin] = useState(isLoggedIn);
+  const hostApiKey="https://trendmart-3.onrender.com";
+  
+  
   
   
   
@@ -23,6 +26,7 @@ const Cart = ({ isLoggedIn, onLoginSuccess, onSkipLogin }) => {
 
   // Handle the increase of product quantity and update it in the state
   const increaseHandle = async (ItemId) => {
+    const increaseKey=`${hostApiKey}/cart/increase/${ItemId}`
     try {
       const token = await AsyncStorage.getItem('userToken');  // Get the token here
       if (!token) {
@@ -30,8 +34,8 @@ const Cart = ({ isLoggedIn, onLoginSuccess, onSkipLogin }) => {
         return; // Handle this case appropriately (e.g., prompt the user to login)
       }
 
-      const url = `http://192.168.29.170:3000/cart/increase/${ItemId}`;
-      const response = await fetch(url, {
+      
+      const response = await fetch(increaseKey, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -59,7 +63,7 @@ const Cart = ({ isLoggedIn, onLoginSuccess, onSkipLogin }) => {
 
 // Handle the decrease of product quantity and update it in the state
 const decreaseHandle = async (ItemId) => {
-    
+    const decreaseKey=`${hostApiKey}/cart/decrease/${ItemId}`
     try {
       const token = await AsyncStorage.getItem('userToken');  // Get the token here
       if (!token) {
@@ -67,8 +71,8 @@ const decreaseHandle = async (ItemId) => {
         return; // Handle this case appropriately (e.g., prompt the user to login)
       }
 
-      const url = `http://192.168.29.170:3000/cart/decrease/${ItemId}`;
-      const response = await fetch(url, {
+      
+      const response = await fetch(decreaseKey, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -97,16 +101,14 @@ const decreaseHandle = async (ItemId) => {
 
 // Handle the decrease of product quantity and update it in the state
 const deleteHandle = async (index) => {  // Pass the index to the function
-    
+    const deleteKey=`${hostApiKey}/cart/delete/${index}`
     try {
         const token = await AsyncStorage.getItem('userToken');  // Get the token here
         if (!token) {
             console.log("No token found, user might not be logged in.");
             return; // Handle this case appropriately (e.g., prompt the user to login)
         }
-
-        const url = `http://192.168.29.170:3000/cart/delete/${index}`;  // Send index, not ItemId
-        const response = await fetch(url, {
+        const response = await fetch(deleteKey, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',
@@ -132,7 +134,8 @@ const deleteHandle = async (index) => {  // Pass the index to the function
 };
 
 
-const buyProductHandle= useCallback( async (itemId)=>{
+const buyProductHandle= useCallback( async (ItemId)=>{
+  const buyProductKey=`${hostApiKey}/user/buyProduct/${ItemId}`
   setLoading(true)
     try {
         const token = await AsyncStorage.getItem('userToken');  // Get the token here
@@ -141,8 +144,7 @@ const buyProductHandle= useCallback( async (itemId)=>{
             return; // Handle this case appropriately (e.g., prompt the user to login)
         }
 
-        const url = `http://192.168.29.170:3000/user/buyProduct/${itemId}`;  // Send index, not ItemId
-        const response = await fetch(url, {
+        const response = await fetch(buyProductKey, {
             method: "GET",
             headers: {
                 'Content-Type': 'application/json',
@@ -156,7 +158,12 @@ const buyProductHandle= useCallback( async (itemId)=>{
 
         const data = await response.json();
         setLoading(false);
-        console.log("data", data);
+        console.log("Buy response =>", {
+  success: data.success,
+  productName: data.product?.name,
+  quantity: data.quantity
+});
+
          navigation.navigate("AddressPage", { data })
       setLoading(false); 
         
@@ -175,14 +182,14 @@ const buyProductHandle= useCallback( async (itemId)=>{
     React.useCallback(() => {
       const fetchCartItem = async () => {
         const token = await AsyncStorage.getItem('userToken');
+        const cart=`${hostApiKey}/cart/userCart`
 
         if (!token) {
           setShowLogin(true);
           return;
         }
-
         try {
-          const response = await fetch('http://192.168.29.170:3000/cart/userCart', {
+          const response = await fetch(cart, {
             method: "GET",
             headers: {
               'Content-Type': 'application/json',
@@ -324,15 +331,22 @@ const buyProductHandle= useCallback( async (itemId)=>{
       ) : error ? (
         <Text style={styles.errorText}>{error}</Text>
       ) : (
-        <View style={styles.itemContainer}>
-          <FlatList
-            data={cartItem}
-            renderItem={renderItem}
-            keyExtractor={(item) => item._id}
-            contentContainerStyle={{ flexGrow: 1 }}
-            showsVerticalScrollIndicator={false}
-          />
-        </View>
+<View style={styles.itemContainer}>
+  {cartItem.length === 0 ? (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={{ fontSize: 18, color: 'gray' }}>No item</Text>
+    </View>
+  ) : (
+    <FlatList
+      data={cartItem}
+      renderItem={renderItem}
+      keyExtractor={(item) => item._id}
+      contentContainerStyle={{ flexGrow: 1 }}
+      showsVerticalScrollIndicator={false}
+    />
+  )}
+</View>
+
       )}
     </View>
   );
@@ -484,4 +498,11 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 16,
   },
+  emptyText: {
+  fontSize: 18,
+  color: 'gray',
+  textAlign: 'center',
+  marginTop: 20,
+},
+
 });

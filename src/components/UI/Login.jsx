@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "reac
 import { useNavigation } from '@react-navigation/native';
 import Entypo from 'react-native-vector-icons/Entypo'; // Import Entypo from react-native-vector-icons
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Config from "react-native-config";
 
 const Login = ({onSkipLogin, onLoginSuccess }) => {
     const [isLogin, setIsLogin] = useState(true);
@@ -10,6 +11,12 @@ const Login = ({onSkipLogin, onLoginSuccess }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigation = useNavigation(); // Use the navigation hook
+
+    //APIs Keys
+    const hostApiKey="https://trendmart-3.onrender.com";
+    const login=`${hostApiKey}/user/userLogin`
+    const register=`${hostApiKey}user/userRegister`
+
   
   
     const handleLogin = async () => {
@@ -22,7 +29,7 @@ const Login = ({onSkipLogin, onLoginSuccess }) => {
       console.log("Sending user data: ", userData);
   
       try {
-        const response = await fetch('http://192.168.29.170:3000/user/userLogin', {
+        const response = await fetch(login, {
           method: "POST",
           headers: {
             'Content-Type': 'application/json',
@@ -36,8 +43,9 @@ const Login = ({onSkipLogin, onLoginSuccess }) => {
           Alert.alert("Email or Password Incorrect!");
         } else {
           await AsyncStorage.setItem('userToken', responseData.token); // Save token to AsyncStorage
-          onLoginSuccess()
+          onLoginSuccess(responseData)
           Alert.alert('Login successful');
+          
         }
       } catch (error) {
         console.error("Error during login: ", error);
@@ -55,7 +63,7 @@ const Login = ({onSkipLogin, onLoginSuccess }) => {
       console.log("Sending submit data: ", submitData);
   
       try {
-        const response = await fetch('http://192.168.29.170:3000/user/userRegister', {
+        const response = await fetch(register, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -157,8 +165,8 @@ const Login = ({onSkipLogin, onLoginSuccess }) => {
               </TouchableOpacity>
               <Text style={styles.footerText}>
                 Not a Member?{" "}
-                <Text style={styles.linkText} onPress={() => setIsLogin(false)}>
-                  Login Account
+                <Text style={styles.linkText} onPress={() => setIsLogin(true)}>
+                  Create Account
                 </Text>
               </Text>
             </View>

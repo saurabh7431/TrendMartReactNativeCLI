@@ -6,12 +6,12 @@ import WorkIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Security from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import Config from 'react-native-config';
 
 
 
  
 const AddressPage = ({ route }) => {
-console.log("Loaded");
 
   const {data}=route.params;
   const navigation=useNavigation()
@@ -29,6 +29,7 @@ console.log("Loaded");
   const [addressType, setAddressType] = useState('Home');
    const [activeType, setActiveType] = useState('Home');
    const [isEditing, setIsEditing] = useState(false);
+   const hostApiKey="https://trendmart-3.onrender.com";
       
 
   // useState hooks to productData
@@ -88,10 +89,14 @@ console.log("Loaded");
           Alert.alert('Authentication Error', 'Please log in to continue.');
           return;
         }
-    
-        const url = `http://192.168.29.170:3000/user/userAddress/${productId}`;
-    
-        const response = await fetch(url, {
+        const userAddressKey=`${hostApiKey}/user/userAddress/${productId}`
+        console.log("Config localhost: ", Config.localHost);
+        console.log("🚀 ~ handleSubmit ~ productId:", productId)
+        
+       console.log("User Address:", userAddressKey);
+      console.log("Config Address:", Config.address);
+      
+        const response = await fetch(userAddressKey, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

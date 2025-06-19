@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, View, StyleSheet, Button, Image, TouchableOpacity } from 'react-native';
+import Config from 'react-native-config';
 
 const OrderDetails = ({ route, navigation }) => {
   const { verifyData } = route.params;
@@ -9,13 +10,16 @@ const OrderDetails = ({ route, navigation }) => {
   const [loading, setLoading] = useState(true);
   const [secondsLeft, setSecondsLeft] = useState(10);
 
+  //API Keys
+  const hostApiKey="https://trendmart-3.onrender.com";
+const orderDetails=`${hostApiKey}/user/userOrders/${orderId}`
+
   // Fetch order data
   useEffect(() => {
     if (orderId) {
       const fetchOrder = async () => {
         try {
-          let url = `http://192.168.29.170:3000/user/userOrders/${orderId}`;
-          const response = await fetch(url, {
+          const response = await fetch(orderDetails, {
             method: "GET",
             headers: {
               'Content-Type': 'application/json',

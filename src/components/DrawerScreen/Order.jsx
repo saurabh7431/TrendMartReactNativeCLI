@@ -1,11 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, ScrollView, } from 'react-native';
+import Config from 'react-native-config';
 
 const Order = () => {
-  const [orders, setOrders] = useState({});
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // APIs Keys
+  const hostApiKey="https://trendmart-3.onrender.com";
+  const ordersKey=`${hostApiKey}/user/userOrders`
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -16,7 +20,7 @@ const Order = () => {
           throw new Error('Token not found');
         }
 
-        const response = await fetch('http://192.168.29.170:3000/user/userOrders', {
+        const response = await fetch(ordersKey, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -29,9 +33,11 @@ const Order = () => {
         }
 
         const data = await response.json();
-        console.log("data", data);
+        console.log("data orders", data.orders);
         
         if (data.success && data.orders) {
+          console.log("Fetched orders successfully:", data.orders);
+          
           setOrders(data.orders);
         } else {
           setError('No orders found or there was an issue with the response data');
@@ -79,24 +85,24 @@ const Order = () => {
         <Text className='text-lg text-center text-gray-500'>No orders found</Text>
       ) : (
         orders.map((order) => (
-          <View key={order.orderId} className='bg-white p-4 rounded-lg shadow-lg mb-4'>
-            <Text className='text-xl font-bold text-gray-800'>Order ID: {order.orderId}</Text>
+          <View key={order._id} className='bg-white p-4 rounded-lg shadow-lg mb-4'>
+            <Text className='text-xl font-bold text-gray-800'>Order ID: {order._id}</Text>
             <Text className='text-sm text-gray-500'>
               Status:  <Text className={order.status === 'Paid' ? 'text-green-500' : 'text-red-500'}>
                 {order.status}
               </Text>
             </Text>
-            <Text className='text-sm text-gray-500'>Order Date: {new Date(order.createdAt).toLocaleDateString()}</Text>
+            <Text className='text-sm text-gray-500'>Order Date: {new Date(order.orderDate).toLocaleDateString()}</Text>
             
             <View className='flex-row justify-between items-center mt-4'>
               <Image
                 
-                source={{ uri: bufferToBase64(order?.product?.productImage.data) }}
+                source={{ uri: bufferToBase64(order?.product?.image.data) }}
                 className='w-[80] h-[110] rounded-md'
               />
               <View className='ml-4'>
-                <Text className='text-lg font-semibold text-gray-800'>{order.product.productName}</Text>
-                <Text className='text-sm text-gray-600'>Price: ₹{order.product.productPrice}</Text>
+                <Text className='text-lg font-semibold text-gray-800'> {order.product.productName}</Text>
+                <Text className='text-sm text-gray-600'>Price: ₹{order.product.price}</Text>
                 <Text className='text-sm text-gray-600'>Quantity: {order.quantity}</Text>
                 <Text className='text-lg font-bold text-gray-800 mt-2'>
                   Total: ₹{order.totalMRP}

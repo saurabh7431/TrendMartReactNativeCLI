@@ -139,6 +139,8 @@ const App = () => {
     try {
       await AsyncStorage.setItem('userToken', responseData.token);
       setIsLoggedIn(true);
+      console.log("Skip");
+      
     } catch (error) {
       console.error('Error storing token', error);
     }

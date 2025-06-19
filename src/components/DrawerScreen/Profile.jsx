@@ -6,6 +6,7 @@ import Pencil from 'react-native-vector-icons/FontAwesome';
 import { launchImageLibrary } from 'react-native-image-picker';
 import ImagePicker from 'react-native-image-crop-picker';
 import Login from '../UI/Login';
+import Config from 'react-native-config';
 
 const Profile = ({ isLoggedIn, onLogout, onLoginSuccess, onSkipLogin }) => {
     const [showLogin, setShowLogin] = useState(isLoggedIn);
@@ -13,7 +14,10 @@ const Profile = ({ isLoggedIn, onLogout, onLoginSuccess, onSkipLogin }) => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [loading, setLoading]=useState(true)
     const navigation = useNavigation();
-
+    //APIs Keys
+    const hostApiKey="https://trendmart-3.onrender.com";
+    const profileKey=`${hostApiKey}/user/profile`;
+    const updateProfileKey=`${hostApiKey}/user/updateprofile/${userProfile._id}`
 
     
     
@@ -29,10 +33,7 @@ const Profile = ({ isLoggedIn, onLogout, onLoginSuccess, onSkipLogin }) => {
                 return;
             }
             try {
-                console.log("In useEffect");
-                
-                const apiUrl = "http://192.168.29.170:3000/user/profile";
-                const response = await fetch(apiUrl, {
+                const response = await fetch(profileKey, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -98,9 +99,8 @@ const Profile = ({ isLoggedIn, onLogout, onLoginSuccess, onSkipLogin }) => {
             name: fileName,  // File name
         });
         try {
-            const apiUrl = `http://192.168.29.170:3000/user/updateprofile/${userProfile._id}`;
             
-            const response = await fetch(apiUrl, {
+            const response = await fetch(updateProfileKey, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`, // Authorization header

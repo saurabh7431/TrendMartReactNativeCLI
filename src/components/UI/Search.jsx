@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
+import Config from 'react-native-config';
 
 // Backend URL for fetching products
 const API_URL = 'http://192.168.29.170:3000/user/Search';
@@ -12,6 +13,9 @@ const Search = ({ isLoggedIn, onLoginSuccess, onSkipLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showLogin, setShowLogin] = useState(isLoggedIn);
+  //API Keys
+  const hostApiKey="https://trendmart-3.onrender.com";
+  const searchKey=`${hostApiKey}/user/Search?query=${query}`
 
 
   const navigation=useNavigation();
@@ -22,7 +26,8 @@ const Search = ({ isLoggedIn, onLoginSuccess, onSkipLogin }) => {
     setError(null);
     const token = await AsyncStorage.getItem('userToken');
     try {
-      const response = await fetch(`${API_URL}?query=${query}`, {
+      // const response = await fetch(`${API_URL}?query=${query}`, {
+      const response = await fetch(searchKey, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
